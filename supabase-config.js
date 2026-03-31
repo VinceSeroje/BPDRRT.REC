@@ -3,18 +3,26 @@
 const SUPABASE_URL = 'https://jkwlkfifzifknrsvmgxr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imprd2xrZmlmemlma25yc3ZtZ3hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NTc2MDksImV4cCI6MjA5MDUzMzYwOX0.QlFVEyjwmcUq4yRy0C4Xz_Zi23xdFEqZczspYSdmVi8';
 
-// Initialize Supabase client
 let supabaseClient;
 
-// Initialize Supabase
 async function initSupabase() {
-    if (typeof window.supabase !== 'undefined') {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase initialized');
-        return true;
+    try {
+        // Try to use the globally available supabase from the script
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase connected successfully');
+            return true;
+        }
+    } catch (e) {
+        console.error('❌ Supabase initialization failed:', e);
     }
     return false;
 }
+
+// Wait for Supabase to be ready
+window.addEventListener('load', () => {
+    setTimeout(initSupabase, 500);
+});
 
 // Check if Supabase is configured
 function isSupabaseConfigured() {
