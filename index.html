@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCGI DRRT RACS Bohol - Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e3a5f;
+            --secondary-color: #4a90d9;
+            --accent-color: #d4881e;
+            --mcgi-blue: #0066a4;
+            --drrt-orange: #d4881e;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, #0d1f33 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .sidebar .logo {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar .logo .logo-img {
+            width: 100%;
+            max-width: 200px;
+            height: auto;
+        }
+        
+        .sidebar .logo h4 {
+            color: #fff;
+            margin: 10px 0 0 0;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .sidebar .logo span {
+            color: var(--accent-color);
+            font-size: 0.75rem;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.7);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 5px 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .stat-card {
+            padding: 25px;
+            border-radius: 12px;
+            color: #fff;
+        }
+        
+        .stat-card.active-card { background: linear-gradient(135deg, #28a745, #20c997); }
+        .stat-card.onoff-card { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+        .stat-card.inactive-card { background: linear-gradient(135deg, #dc3545, #c82333); }
+        .stat-card.total-card { background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); }
+        
+        .badge-active { background: #28a745; }
+        .badge-onoff { background: #ffc107; color: #333; }
+        .badge-inactive { background: #dc3545; }
+        .badge-confirmed { background: linear-gradient(135deg, #28a745, #20c997); }
+        .bg-purple { background: #8e44ad !important; }
+        
+        .local-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            padding: 10px 20px;
+            margin: 20px -12px 10px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            object-fit: cover;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: #e9ecef;
+        }
+        
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #0d1f33 100%);
+        }
+        
+        .login-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, var(--mcgi-blue), var(--drrt-orange));
+            padding: 30px;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .login-header .logo-img {
+            max-width: 180px;
+            margin-bottom: 10px;
+        }
+        
+        .login-body { padding: 40px; }
+        
+        .btn-accent {
+            background: var(--drrt-orange);
+            border-color: var(--drrt-orange);
+            color: #fff;
+        }
+        
+        .btn-accent:hover {
+            background: #b8741a;
+            color: #fff;
+        }
+        
+        .table thead th {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        
+        .top-header {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .form-label.required::after {
+            content: ' *';
+            color: #dc3545;
+        }
+        
+        .duty-select {
+            min-width: 120px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding-bottom: 80px; }
+            .top-header { flex-direction: column; gap: 10px; align-items: flex-start !important; }
+            .mobile-nav { display: flex !important; }
+        }
+        
+        /* Mobile Navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, var(--primary-color) 0%, #0d1f33 100%);
+            padding: 10px 0;
+            z-index: 1000;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s;
+        }
+        
+        .mobile-nav-item:hover, .mobile-nav-item.active {
+            color: #fff;
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+    /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .calendar-header {
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 10px 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .calendar-day {
+            background: #f8f9fa;
+            min-height: 100px;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e9ecef;
+        }
+        .calendar-day:hover {
+            background: #e9ecef;
+        }
+        .calendar-day.today {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        .calendar-day.other-month {
+            background: #f1f1f1;
+            color: #999;
+        }
+        .calendar-day.has-activity {
+            background: #d4edda;
+        }
+        .calendar-day-number {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+        .calendar-activity {
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .calendar-activity:hover {
+            background: var(--accent-color);
+        }
+        .activity-badge {
+            background: #28a745;
+            color: white;
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: 10px;
+        }
+    </style>
+    <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="logo.png" alt="MCGI DRRT ACS Logo" class="logo-img">
+                    
+                    
+                    
+                    
+                
+                <h5 class="mb-0">Bohol Province</h5>
+            </div>
+            <div class="login-body">
+                <h4 class="text-center mb-4" style="color: var(--primary-color);" id="loginTitle">Admin Login</h4>
+                <div id="setupForm" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>Create your admin account to get started.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Admin Name</label>
+                        <input type="text" class="form-control" id="setupName" placeholder="Your name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="setupEmail" placeholder="admin@gmail.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="setupPassword" placeholder="Create password">
+                    </div>
+                    <button class="btn btn-primary w-100 py-2" onclick="createAdmin()">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </button>
+                </div>
+                <div id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password">
+                    </div>
+                    <button class="btn btn-primary w-100 py-2" type="button" id="loginBtn">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" style="display: none;">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="logo.png" alt="MCGI DRRT ACS Logo" class="logo-img">
+                    
+                    
+                    
+                    
+                
+                <h4>Attendance System</h4>
+                <span>Bohol Province</span>
+            </div>
+            <div class="nav-menu mt-3">
+                <div class="nav-link active" onclick="showPage('dashboard')">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </div>
+                <div class="nav-link" onclick="showPage('members')">
+                    <i class="bi bi-people"></i> Members
+                </div>
+                <div class="nav-link" onclick="showPage('gatherings')">
+                    <i class="bi bi-calendar-event"></i> Gatherings
+                </div>
+                <div class="nav-link" onclick="showPage('analytics')">
+                    <i class="bi bi-graph-up"></i> Analytics
+                </div>
+                <div class="nav-link" onclick="showPage('calendar')">
+                    <i class="bi bi-calendar3"></i> Calendar
+                </div>
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
+                <div class="nav-link" onclick="showPage('settings')">
+                    <i class="bi bi-gear"></i> Settings
+                </div>
+                <div class="nav-link text-danger" onclick="logout()">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-header">
+                <h4 class="mb-0" id="pageTitle">Dashboard</h4>
+                <div class="d-flex align-items-center gap-4">
+                    <div id="realTimeClock" class="text-primary fw-semibold">
+                        <i class="bi bi-clock me-2"></i>
+                        <span id="currentTime">--:--:--</span>
+                        <small id="currentDate" class="text-muted ms-2"></small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <img id="headerAdminPhoto" src="" alt="Admin" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover; display: none;">
+                        <i id="headerAdminIcon" class="bi bi-person-circle me-2 fs-4"></i>
+                        <span id="adminName">Admin</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card total-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 mb-1">Total Members</div>
+                                    <div class="display-6" id="statTotal">0</div>
+                                </div>
+                                <i class="bi bi-people fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card active-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 mb-1">Active</div>
+                                    <div class="display-6" id="statActive">0</div>
+                                </div>
+                                <i class="bi bi-check-circle fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card onoff-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 mb-1">On/Off</div>
+                                    <div class="display-6" id="statOnOff">0</div>
+                                </div>
+                                <i class="bi bi-dash-circle fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stat-card inactive-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 mb-1">Inactive</div>
+                                    <div class="display-6" id="statInactive">0</div>
+                                </div>
+                                <i class="bi bi-x-circle fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Recent Gatherings</h5>
+                                <button class="btn btn-sm btn-primary" onclick="showPage('gatherings')">View All</button>
+                            </div>
+                            <div class="card-body" id="recentGatherings">
+                                <p class="text-muted text-center py-4">No gatherings yet</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-trophy me-2 text-warning"></i>Top Performers</h5>
+                            </div>
+                            <div class="card-body" id="topPerformers">
+                                <p class="text-muted text-center py-4">No data yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 col-6 mb-3">
+                                <button class="btn btn-outline-primary w-100 py-3" onclick="showPage('addMember')">
+                                    <i class="bi bi-person-plus d-block mb-2 fs-4"></i>Add Member
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <button class="btn btn-outline-success w-100 py-3" onclick="showPage('addGathering')">
+                                    <i class="bi bi-calendar-plus d-block mb-2 fs-4"></i>New Gathering
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <button class="btn btn-outline-info w-100 py-3" onclick="showPage('members')">
+                                    <i class="bi bi-people d-block mb-2 fs-4"></i>View Members
+                                </button>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <button class="btn btn-outline-warning w-100 py-3" onclick="showPage('analytics')">
+                                    <i class="bi bi-graph-up d-block mb-2 fs-4"></i>Analytics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members Page -->
+            <div id="membersPage" class="page">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="memberSearch" placeholder="Search by name, church ID, or local..." oninput="filterMembers()">
+                                    <select class="form-select" id="localFilter" style="width: auto;" onchange="filterMembers()">
+                                        <option value="">All Locals</option>
+                                    </select>
+                                    <select class="form-select" id="bloodTypeFilter" style="width: auto;" onchange="filterMembers()">
+                                        <option value="">All Blood Types</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                    <select class="form-select" id="departmentFilter" style="width: auto;" onchange="filterMembers()">
+                                        <option value="">All Departments</option>
+                                        <option value="Disaster Response and Rescue Team">DRRT</option>
+                                        <option value="Riders Assistance and Community Service">RACS</option>
+                                        <option value="Marshall">Marshall</option>
+                                        <option value="K9">K9</option>
+                                    </select>
+                                    <select class="form-select" id="positionFilter" style="width: auto;" onchange="filterMembers()">
+                                        <option value="">All Positions</option>
+                                        <optgroup label="Local">
+                                            <option value="Local DRRT">Local DRRT</option>
+                                            <option value="Local RACS">Local RACS</option>
+                                            <option value="Local Marshall">Local Marshall</option>
+                                            <option value="Local K9">Local K9</option>
+                                        </optgroup>
+                                        <optgroup label="Municipal">
+                                            <option value="Municipal DRRT">Municipal DRRT</option>
+                                            <option value="Municipal RACS">Municipal RACS</option>
+                                            <option value="Municipal Marshall">Municipal Marshall</option>
+                                            <option value="Municipal K9">Municipal K9</option>
+                                        </optgroup>
+                                        <optgroup label="District">
+                                            <option value="District DRRT">District DRRT</option>
+                                            <option value="District RACS">District RACS</option>
+                                            <option value="District Marshall">District Marshall</option>
+                                            <option value="District K9">District K9</option>
+                                        </optgroup>
+                                        <optgroup label="Provincial">
+                                            <option value="Provincial DRRT">Provincial DRRT</option>
+                                            <option value="Provincial RACS">Provincial RACS</option>
+                                            <option value="Provincial Marshall">Provincial Marshall</option>
+                                            <option value="Provincial K9">Provincial K9</option>
+                                        </optgroup>
+                                    </select>
+                                    <select class="form-select" id="provinceFilter" style="width: auto;" onchange="filterMembers()">
+                                        <option value="">All Provinces</option>
+                                        <option value="Bohol">Bohol</option>
+                                        <option value="Cebu">Cebu</option>
+                                        <option value="Negros Oriental">Negros Oriental</option>
+                                        <option value="Negros Occidental">Negros Occidental</option>
+                                        <option value="Siquijor">Siquijor</option>
+                                    </select>
+                                    <select class="form-select" id="zoneFilter" style="width: auto;" onchange="filterMembers()">
+                                        <option value="">All Zones</option>
+                                        <option value="Zone 1">Zone 1</option>
+                                        <option value="Zone 2">Zone 2</option>
+                                        <option value="Zone 3">Zone 3</option>
+                                        <option value="Zone 4">Zone 4</option>
+                                        <option value="Zone 5">Zone 5</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end mt-3 mt-md-0">
+                                <button class="btn btn-info me-2" onclick="downloadAllProfileCards()">
+                                    <i class="bi bi-download me-2"></i>Download All Profile Cards
+                                </button>
+                                <button class="btn btn-accent admin-only" onclick="showPage('addMember')">
+                                    <i class="bi bi-person-plus me-2"></i>Add New Member
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Photo</th>
+                                        <th>Name</th>
+                                        <th>Church ID</th>
+                                        <th>Local</th>
+                                        <th>Department</th>
+                                        <th>Position</th>
+                                        <th>Province</th>
+                                        <th>Zone</th>
+                                        <th>Status</th>
+                                        <th>Duties</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="membersList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Member Page -->
+            <div id="addMemberPage" class="page">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Add New Member</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 text-center mb-4">
+                                        <img id="photoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect fill='%23e9ecef' width='150' height='150'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236c757d' font-size='60'%3E👤%3C/text%3E%3C/svg%3E" alt="Photo" class="profile-photo">
+                                        <div class="mt-2">
+                                            <label class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-camera me-1"></i>Upload Photo
+                                                <input type="file" id="memberPhoto" class="d-none" accept="image/*" onchange="previewPhoto(this)">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label required">Full Name</label>
+                                                <input type="text" class="form-control" id="memberName" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label required">Church ID</label>
+                                                <input type="text" class="form-control" id="memberChurchId" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label required">Local (Origin)</label>
+                                                <input type="text" class="form-control" id="memberLocal" list="localList" required placeholder="Where they belong">
+                                                <datalist id="localList"></datalist>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label required">Department</label>
+                                                <select class="form-control" id="memberDepartment" required>
+                                                    <option value="">-- Select Department --</option>
+                                                    <option value="Disaster Response and Rescue Team">Disaster Response and Rescue Team (DRRT)</option>
+                                                    <option value="Riders Assistance and Community Service">Riders Assistance and Community Service (RACS)</option>
+                                                    <option value="Marshall">Marshall</option>
+                                                    <option value="K9">K9</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Age</label>
+                                                <input type="number" class="form-control" id="memberAge">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Position</label>
+                                                <select class="form-control" id="memberPosition" onchange="toggleCustomPosition()">
+                                                    <option value="">-- Select Position --</option>
+                                                    <optgroup label="Local">
+                                                        <option value="Local DRRT">Local DRRT</option>
+                                                        <option value="Local RACS">Local RACS</option>
+                                                        <option value="Local Marshall">Local Marshall</option>
+                                                        <option value="Local K9">Local K9</option>
+                                                    </optgroup>
+                                                    <optgroup label="Municipal">
+                                                        <option value="Municipal DRRT">Municipal DRRT</option>
+                                                        <option value="Municipal RACS">Municipal RACS</option>
+                                                        <option value="Municipal Marshall">Municipal Marshall</option>
+                                                        <option value="Municipal K9">Municipal K9</option>
+                                                    </optgroup>
+                                                    <optgroup label="District">
+                                                        <option value="District DRRT">District DRRT</option>
+                                                        <option value="District RACS">District RACS</option>
+                                                        <option value="District Marshall">District Marshall</option>
+                                                        <option value="District K9">District K9</option>
+                                                    </optgroup>
+                                                    <optgroup label="Provincial">
+                                                        <option value="Provincial DRRT">Provincial DRRT</option>
+                                                        <option value="Provincial RACS">Provincial RACS</option>
+                                                        <option value="Provincial Marshall">Provincial Marshall</option>
+                                                        <option value="Provincial K9">Provincial K9</option>
+                                                    </optgroup>
+                                                    <option value="custom">Other (Specify)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row" id="customPositionRow" style="display: none;">
+                                            <div class="col-md-12 mb-3">
+                                                <label class="form-label">Specify Position</label>
+                                                <input type="text" class="form-control" id="memberCustomPosition" placeholder="Enter custom position">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Province</label>
+                                                <select class="form-control" id="memberProvince">
+                                                    <option value="">-- Select Province --</option>
+                                                    <option value="Bohol">Bohol</option>
+                                                    <option value="Cebu">Cebu</option>
+                                                    <option value="Negros Oriental">Negros Oriental</option>
+                                                    <option value="Negros Occidental">Negros Occidental</option>
+                                                    <option value="Siquijor">Siquijor</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Zone</label>
+                                                <select class="form-control" id="memberZone">
+                                                    <option value="">-- Select Zone --</option>
+                                                    <option value="Zone 1">Zone 1</option>
+                                                    <option value="Zone 2">Zone 2</option>
+                                                    <option value="Zone 3">Zone 3</option>
+                                                    <option value="Zone 4">Zone 4</option>
+                                                    <option value="Zone 5">Zone 5</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Date of Birth</label>
+                                        <input type="date" class="form-control" id="memberDob">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Date of Baptism</label>
+                                        <input type="date" class="form-control" id="memberBaptism">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="memberPhone" placeholder="e.g., 09123456789">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Skills</label>
+                                        <textarea class="form-control" id="memberSkills" rows="2" placeholder="e.g., First Aid, Driving"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Blood Type</label>
+                                        <select class="form-control" id="memberBloodType">
+                                            <option value="">-- Select Blood Type --</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Vehicle</label>
+                                        <input type="text" class="form-control" id="memberVehicle" placeholder="e.g., Motorcycle, Car">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Login Email</label>
+                                        <input type="email" class="form-control" id="memberEmail" placeholder="Email for member login">
+                                        <small class="text-muted">Member can use this email to login and view their info</small>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Login Password</label>
+                                        <input type="password" class="form-control" id="memberPassword" placeholder="Password for member login">
+                                        <small class="text-muted">Provide password for member to access their account</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <button class="btn btn-secondary" onclick="showPage('members')">Cancel</button>
+                                    <button class="btn btn-primary" onclick="saveMember()">
+                                        <i class="bi bi-check-lg me-2"></i>Save Member
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Member Profile Page -->
+            <div id="memberProfilePage" class="page">
+                <div class="row">
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-body text-center p-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                                <img id="profilePhoto" src="" alt="Photo" class="profile-photo">
+                                <h4 class="text-white mb-1" id="profileName"></h4>
+                                <p class="text-white-50 mb-0" id="profileLocal"></p>
+                            </div>
+                            <div class="p-4">
+                                <div class="mb-3 d-flex justify-content-between">
+                                    <span class="text-muted">Status</span>
+                                    <span id="profileStatus" class="badge"></span>
+                                </div>
+                                <hr>
+                                <div class="mb-3"><i class="bi bi-person-badge me-2 text-primary"></i><strong>Church ID:</strong> <span id="profileChurchId"></span></div>
+                                <div class="mb-3"><i class="bi bi-building me-2 text-primary"></i><strong>Department:</strong> <span id="profileDepartment"></span></div>
+                                <div class="mb-3"><i class="bi bi-briefcase me-2 text-primary"></i><strong>Position:</strong> <span id="profilePosition"></span></div>
+                                <div class="mb-3"><i class="bi bi-geo-alt me-2 text-primary"></i><strong>Province:</strong> <span id="profileProvince"></span></div>
+                                <div class="mb-3"><i class="bi bi-map me-2 text-primary"></i><strong>Zone:</strong> <span id="profileZone"></span></div>
+                                <div class="mb-3"><i class="bi bi-calendar me-2 text-primary"></i><strong>Age:</strong> <span id="profileAge"></span></div>
+                                <div class="mb-3"><i class="bi bi-cake2 me-2 text-primary"></i><strong>Date of Birth:</strong> <span id="profileDob"></span></div>
+                                <div class="mb-3"><i class="bi bi-droplet me-2 text-primary"></i><strong>Baptism:</strong> <span id="profileBaptism"></span></div>
+                                <div class="mb-3"><i class="bi bi-telephone me-2 text-primary"></i><strong>Phone:</strong> <span id="profilePhone"></span></div>
+                                <div class="mb-3"><i class="bi bi-droplet-half me-2 text-danger"></i><strong>Blood Type:</strong> <span id="profileBloodType"></span></div>
+                                <div class="mb-3"><i class="bi bi-tools me-2 text-primary"></i><strong>Skills:</strong> <span id="profileSkills"></span></div>
+                                <div class="mb-3"><i class="bi bi-truck me-2 text-primary"></i><strong>Vehicle:</strong> <span id="profileVehicle"></span></div>
+                                <hr>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="bg-light rounded p-3">
+                                            <h3 class="text-primary mb-0" id="profileTotalDuties">0</h3>
+                                            <small class="text-muted">Total Duties</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-light rounded p-3">
+                                            <h3 class="text-success mb-0" id="profileConsecutive">0</h3>
+                                            <small class="text-muted">Consecutive</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2 mt-4">
+                                    <button class="btn btn-warning flex-grow-1 admin-only" onclick="editMember()"><i class="bi bi-pencil me-2"></i>Edit</button>
+                                    <button class="btn btn-info flex-grow-1" onclick="downloadProfileCard()"><i class="bi bi-download me-2"></i>Profile Card</button>
+                                    <button class="btn btn-outline-secondary flex-grow-1" onclick="showPage('members')"><i class="bi bi-arrow-left me-2"></i>Back</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Duty History</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Gathering</th>
+                                                <th>Time In</th>
+                                                <th>Time Out</th>
+                                                <th>Batch</th>
+                                                <th>Duty Venue</th>
+                                                <th>Condition</th>
+                                                <th>Weather</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dutyHistory"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gatherings Page -->
+            <div id="gatheringsPage" class="page">
+                <div class="card mb-4">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">All Gatherings</h5>
+                            <p class="text-muted mb-0">Manage gatherings and track attendance</p>
+                        </div>
+                        <button class="btn btn-accent" onclick="showPage('addGathering')">
+                            <i class="bi bi-calendar-plus me-2"></i>New Gathering
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Date</th>
+                                        <th>Venue</th>
+                                        <th>On Duty</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gatheringsList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Gathering Page -->
+            <div id="addGatheringPage" class="page">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>Create New Gathering</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label required">Gathering Title</label>
+                                    <input type="text" class="form-control" id="gatheringTitle" placeholder="e.g., Prayer Meeting, Thanksgiving">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label required">Date</label>
+                                    <input type="date" class="form-control" id="gatheringDate">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Venue / Event Location</label>
+                                        <input type="text" class="form-control" id="gatheringLocal" placeholder="e.g., Local ng Guindulman">
+                                    </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>All registered members will be automatically added to this gathering.
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <button class="btn btn-secondary" onclick="showPage('gatherings')">Cancel</button>
+                                    <button class="btn btn-primary" onclick="saveGathering()">
+                                        <i class="bi bi-check-lg me-2"></i>Create Gathering
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Page -->
+            <div id="attendancePage" class="page">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <h4 id="attendanceTitle">Gathering Name</h4>
+                                <p class="text-muted mb-0"><i class="bi bi-calendar me-2"></i><span id="attendanceDate"></span></p>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-success btn-sm" onclick="markAllOnDuty()">
+                                    <i class="bi bi-check-all me-2"></i>Mark All On Duty
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="markAllOffDuty()">
+                                    <i class="bi bi-x-lg me-2"></i>Mark All Off
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="attendanceForm"></form>
+                <div class="card mt-3">
+                    <div class="card-body text-center">
+                        <button class="btn btn-primary btn-lg px-5" onclick="saveAttendance()">
+                            <i class="bi bi-check-lg me-2"></i>Save Attendance
+                        </button>
+                        <button class="btn btn-outline-secondary btn-lg ms-2" onclick="showPage('gatherings')">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analyticsPage" class="page">
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h5>Active Members</h5>
+                                <h2 id="analyticsActive">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <h5>On/Off Duty</h5>
+                                <h2 id="analyticsOnOff">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h5>Inactive Members</h5>
+                                <h2 id="analyticsInactive">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="bi bi-trophy me-2 text-warning"></i>Duty Leaderboard</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Member</th>
+                                        <th>Local</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Total Duties</th>
+                                        <th class="text-center">Consecutive</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Page -->
+            <div id="calendarPage" class="page">
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button class="btn btn-outline-primary btn-sm me-2" onclick="previousMonth()">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <span id="calendarMonthYear" class="fw-bold fs-5"></span>
+                                    <button class="btn btn-outline-primary btn-sm ms-2" onclick="nextMonth()">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-primary btn-sm admin-only" onclick="showAddActivityModal()">
+                                    <i class="bi bi-plus-lg me-1"></i>Add Activity
+                                </button>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="calendar-grid">
+                                    <div class="calendar-header">Sun</div>
+                                    <div class="calendar-header">Mon</div>
+                                    <div class="calendar-header">Tue</div>
+                                    <div class="calendar-header">Wed</div>
+                                    <div class="calendar-header">Thu</div>
+                                    <div class="calendar-header">Fri</div>
+                                    <div class="calendar-header">Sat</div>
+                                </div>
+                                <div id="calendarDays" class="calendar-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Upcoming Activities</h5>
+                            </div>
+                            <div class="card-body" id="upcomingActivities">
+                                <p class="text-muted text-center py-4">No upcoming activities</p>
+                            </div>
+                        </div>
+                        <div class="card mt-3">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Today's Activities</h5>
+                            </div>
+                            <div class="card-body" id="todayActivities">
+                                <p class="text-muted text-center py-4">No activities today</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-person-gear me-2"></i>Account Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    <img id="adminProfilePhoto" src="" alt="Admin Photo" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--primary-color);">
+                                    <div>
+                                        <label class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-camera me-1"></i>Change Profile Photo
+                                            <input type="file" id="adminPhotoInput" class="d-none" accept="image/*" onchange="previewAdminPhoto(this)">
+                                        </label>
+                                        <button class="btn btn-success btn-sm ms-2" id="saveAdminPhotoBtn" style="display: none;" onclick="saveAdminPhoto()">
+                                            <i class="bi bi-check-lg me-1"></i>Save Photo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Current Admin Name</label>
+                                    <input type="text" class="form-control" id="currentAdminName" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Current Email</label>
+                                    <input type="email" class="form-control" id="currentAdminEmail" readonly>
+                                </div>
+                                <hr>
+                                <h6 class="mb-3"><i class="bi bi-pencil me-2"></i>Change Credentials</h6>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-shield-lock me-2"></i>For security, you need to verify your identity with a code sent to your email before changing your credentials.
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-outline-primary" onclick="sendVerificationCode()">
+                                        <i class="bi bi-envelope me-2"></i>Send Verification Code
+                                    </button>
+                                </div>
+                                <div id="verificationSection" style="display: none;">
+                                    <div class="mb-3">
+                                        <label class="form-label">Enter Verification Code</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6">
+                                            <button class="btn btn-success" onclick="verifyCode()">Verify</button>
+                                        </div>
+                                        <small class="text-muted">Code expires in 10 minutes</small>
+                                    </div>
+                                </div>
+                                <div id="changeCredentialsForm" style="display: none;">
+                                    <hr>
+                                    <div class="mb-3">
+                                        <label class="form-label">New Admin Name</label>
+                                        <input type="text" class="form-control" id="newAdminName" placeholder="Enter new name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="newAdminPassword" placeholder="Enter new password">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirmNewPassword" placeholder="Confirm new password">
+                                    </div>
+                                    <button class="btn btn-primary" onclick="saveCredentials()">
+                                        <i class="bi bi-check-lg me-2"></i>Save Changes
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="cancelChangeCredentials()">
+                                        <i class="bi bi-x-lg me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="bi bi-database me-2"></i>Data Management</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6>Export Data</h6>
+                                    <p class="text-muted small">Download all your data as JSON backup file.</p>
+                                    <button class="btn btn-outline-success" onclick="exportAllData()">
+                                        <i class="bi bi-download me-2"></i>Export All Data
+                                    </button>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <h6>Import Data</h6>
+                                    <p class="text-muted small">Restore data from a JSON backup file.</p>
+                                    <input type="file" class="form-control mb-2" id="importDataFile" accept=".json">
+                                    <button class="btn btn-outline-info" onclick="importAllData()">
+                                        <i class="bi bi-upload me-2"></i>Import Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Backup Admin Section (shown only for backup admin) -->
+                    <div id="backupAdminSection" class="col-md-6 mb-4" style="display: none;">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning bg-opacity-25 py-3">
+                                <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Backup Admin Controls</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Backup Admin Mode</strong> - You can manage the main admin account and access automatic backups.
+                                </div>
+                                <div class="mb-3">
+                                    <h6>Auto-Saved Backups</h6>
+                                    <p class="text-muted small">Download the latest automatic backup.</p>
+                                    <button class="btn btn-primary" onclick="downloadAutoBackup()">
+                                        <i class="bi bi-download me-2"></i>Download Latest Backup
+                                    </button>
+                                    <p class="text-muted small mt-2" id="lastBackupTime"></p>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <h6>Reset Admin Account</h6>
+                                    <p class="text-muted small">If the main admin account is compromised, you can reset it here.</p>
+                                    <div class="mb-2">
+                                        <label class="form-label">New Admin Name</label>
+                                        <input type="text" class="form-control" id="resetAdminName" placeholder="Enter new admin name">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">New Admin Email</label>
+                                        <input type="email" class="form-control" id="resetAdminEmail" placeholder="Enter new admin email">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">New Admin Password</label>
+                                        <input type="password" class="form-control" id="resetAdminPassword" placeholder="Enter new password">
+                                    </div>
+                                    <button class="btn btn-danger" onclick="resetAdminAccount()">
+                                        <i class="bi bi-arrow-repeat me-2"></i>Reset Admin Account
+                                    </button>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <h6>Restore Data to Admin</h6>
+                                    <p class="text-muted small">Import backup data to restore the main admin's data.</p>
+                                    <input type="file" class="form-control mb-2" id="restoreBackupFile" accept=".json">
+                                    <button class="btn btn-warning" onclick="restoreBackupToAdmin()">
+                                        <i class="bi bi-upload me-2"></i>Restore Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Backup Admin Setup (shown for main admin only if no backup admin exists) -->
+                    <div id="backupAdminSetup" class="col-md-6 mb-4" style="display: none;">
+                        <div class="card border-info">
+                            <div class="card-header bg-info bg-opacity-25 py-3">
+                                <h5 class="mb-0"><i class="bi bi-person-lock me-2"></i>Security Setup</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Create a secondary account for security purposes. This is recommended for account recovery.
+                                </div>
+                                <div id="backupAdminForm">
+                                    <div class="mb-2">
+                                        <label class="form-label">Secondary Account Name</label>
+                                        <input type="text" class="form-control" id="backupAdminName" placeholder="Enter name">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Secondary Account Email</label>
+                                        <input type="email" class="form-control" id="backupAdminEmail" placeholder="Enter email">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Secondary Account Password</label>
+                                        <input type="password" class="form-control" id="backupAdminPassword" placeholder="Enter password">
+                                    </div>
+                                    <button class="btn btn-info" onclick="createBackupAdmin()">
+                                        <i class="bi bi-plus-circle me-2"></i>Create Secondary Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div class="modal fade" id="editMemberModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editMemberId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Full Name</label>
+                            <input type="text" class="form-control" id="editMemberName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Church ID</label>
+                            <input type="text" class="form-control" id="editMemberChurchId" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Local (Origin)</label>
+                            <input type="text" class="form-control" id="editMemberLocal" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Department</label>
+                            <select class="form-control" id="editMemberDepartment" required>
+                                <option value="">-- Select Department --</option>
+                                <option value="Disaster Response and Rescue Team">Disaster Response and Rescue Team (DRRT)</option>
+                                <option value="Riders Assistance and Community Service">Riders Assistance and Community Service (RACS)</option>
+                                <option value="Marshall">Marshall</option>
+                                <option value="K9">K9</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Age</label>
+                            <input type="number" class="form-control" id="editMemberAge">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Position</label>
+                            <select class="form-control" id="editMemberPosition" onchange="toggleEditCustomPosition()">
+                                <option value="">-- Select Position --</option>
+                                <optgroup label="Local">
+                                    <option value="Local DRRT">Local DRRT</option>
+                                    <option value="Local RACS">Local RACS</option>
+                                    <option value="Local Marshall">Local Marshall</option>
+                                    <option value="Local K9">Local K9</option>
+                                </optgroup>
+                                <optgroup label="Municipal">
+                                    <option value="Municipal DRRT">Municipal DRRT</option>
+                                    <option value="Municipal RACS">Municipal RACS</option>
+                                    <option value="Municipal Marshall">Municipal Marshall</option>
+                                    <option value="Municipal K9">Municipal K9</option>
+                                </optgroup>
+                                <optgroup label="District">
+                                    <option value="District DRRT">District DRRT</option>
+                                    <option value="District RACS">District RACS</option>
+                                    <option value="District Marshall">District Marshall</option>
+                                    <option value="District K9">District K9</option>
+                                </optgroup>
+                                <optgroup label="Provincial">
+                                    <option value="Provincial DRRT">Provincial DRRT</option>
+                                    <option value="Provincial RACS">Provincial RACS</option>
+                                    <option value="Provincial Marshall">Provincial Marshall</option>
+                                    <option value="Provincial K9">Provincial K9</option>
+                                </optgroup>
+                                <option value="custom">Other (Specify)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" id="editCustomPositionRow" style="display: none;">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Specify Position</label>
+                            <input type="text" class="form-control" id="editMemberCustomPosition" placeholder="Enter custom position">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Province</label>
+                            <select class="form-control" id="editMemberProvince">
+                                <option value="">-- Select Province --</option>
+                                <option value="Bohol">Bohol</option>
+                                <option value="Cebu">Cebu</option>
+                                <option value="Negros Oriental">Negros Oriental</option>
+                                <option value="Negros Occidental">Negros Occidental</option>
+                                <option value="Siquijor">Siquijor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Zone</label>
+                            <select class="form-control" id="editMemberZone">
+                                <option value="">-- Select Zone --</option>
+                                <option value="Zone 1">Zone 1</option>
+                                <option value="Zone 2">Zone 2</option>
+                                <option value="Zone 3">Zone 3</option>
+                                <option value="Zone 4">Zone 4</option>
+                                <option value="Zone 5">Zone 5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Profile Photo</label>
+                            <input type="file" class="form-control" id="editMemberPhoto" accept="image/*" onchange="previewEditPhoto(this)">
+                            <div class="mt-2">
+                                <img id="editPhotoPreview" src="" alt="Photo Preview" style="max-width: 100px; max-height: 100px; border-radius: 50%; display: none;">
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="editMemberDob">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date of Baptism</label>
+                            <input type="date" class="form-control" id="editMemberBaptism">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="editMemberPhone">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Blood Type</label>
+                            <select class="form-control" id="editMemberBloodType">
+                                <option value="">-- Select Blood Type --</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vehicle</label>
+                            <input type="text" class="form-control" id="editMemberVehicle">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Skills</label>
+                            <textarea class="form-control" id="editMemberSkills" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Login Email</label>
+                            <input type="email" class="form-control" id="editMemberEmail" placeholder="Email for member login">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Login Password</label>
+                            <input type="password" class="form-control" id="editMemberPassword" placeholder="Password for member login">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="updateMember()">
+                        <i class="bi bi-check-lg me-2"></i>Update Member
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Activity Modal -->
+    <div class="modal fade" id="addActivityModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>Add New Activity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editActivityId">
+                    <div class="mb-3">
+                        <label class="form-label required">Activity Title</label>
+                        <input type="text" class="form-control" id="activityTitle" placeholder="e.g., Prayer Meeting, Thanksgiving">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Date</label>
+                        <input type="date" class="form-control" id="activityDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Time</label>
+                        <input type="time" class="form-control" id="activityTime">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Auto-create Gathering</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoCreateGathering" checked>
+                            <label class="form-check-label" for="autoCreateGathering">
+                                Automatically create a gathering when activity time is reached
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Minutes Before (Auto-create)</label>
+                        <input type="number" class="form-control" id="autoCreateMinutes" value="30" min="0" max="120">
+                        <small class="text-muted">How many minutes before the activity to auto-create the gathering</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveActivity()">
+                        <i class="bi bi-check-lg me-2"></i>Save Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Day Activities Modal -->
+    <div class="modal fade" id="dayActivitiesModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dayActivitiesTitle">Activities</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="dayActivitiesList">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary admin-only" id="addActivityForDayBtn" onclick="addActivityForSelectedDay()">
+                        <i class="bi bi-plus-lg me-2"></i>Add Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <!-- Hidden Profile Card Template for PNG Export -->
+    <div id="profileCardTemplate" style="position: absolute; left: -9999px; top: 0;">
+        <div id="profileCardPng" style="width: 600px; background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 50%, #1a365d 100%); border-radius: 16px; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <div style="display: flex;">
+                <!-- Left Side - Photo and Basic Info -->
+                <div style="background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%); padding: 25px; text-align: center; width: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 10px; color: white; font-weight: 600; margin-bottom: 15px;">
+                        MCGI DRRT
+                    </div>
+                    <img id="cardPhoto" src="" alt="Photo" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 12px; background: #e9ecef;">
+                    <h2 id="cardName" style="color: white; margin: 0; font-size: 18px; font-weight: 600;"></h2>
+                    <p id="cardLocal" style="color: rgba(255,255,255,0.8); margin: 5px 0 0 0; font-size: 12px;"></p>
+                    <span id="cardStatus" style="display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;"></span>
+                    <div id="cardDepartment" style="margin-top: 10px; background: rgba(255,255,255,0.25); padding: 6px 14px; border-radius: 20px; font-size: 11px; color: white; font-weight: 500;"></div>
+                </div>
+                
+                <!-- Right Side - Details -->
+                <div style="flex: 1; padding: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px;">
+                            <h3 style="color: #64b5f6; font-size: 11px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">Personal Info</h3>
+                            <div style="margin-bottom: 8px;">
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Church ID</span>
+                                <p id="cardChurchId" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Age</span>
+                                <p id="cardAge" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                            <div>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Date of Birth</span>
+                                <p id="cardDob" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px;">
+                            <h3 style="color: #64b5f6; font-size: 11px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">Additional Info</h3>
+                            <div style="margin-bottom: 8px;">
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Date of Baptism</span>
+                                <p id="cardBaptism" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Blood Type</span>
+                                <p id="cardBloodType" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                            <div>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Phone</span>
+                                <p id="cardPhone" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; margin-top: 15px;">
+                        <h3 style="color: #64b5f6; font-size: 11px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">Skills & Resources</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Skills</span>
+                                <p id="cardSkills" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                            <div>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 10px;">Vehicle</span>
+                                <p id="cardVehicle" style="color: white; margin: 2px 0 0 0; font-size: 13px; font-weight: 500;"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app.js"></script>
+    
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </div>
+        <div class="mobile-nav-item" onclick="showPage('members')" data-page="members">
+            <i class="bi bi-people"></i>
+            <span>Members</span>
+        </div>
+        <div class="mobile-nav-item" onclick="showPage('gatherings')" data-page="gatherings">
+            <i class="bi bi-calendar-event"></i>
+            <span>Gatherings</span>
+        </div>
+        <div class="mobile-nav-item" onclick="showPage('settings')" data-page="settings">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </div>
+        <div class="mobile-nav-item text-danger" onclick="logout()">
+            <i class="bi bi-box-arrow-left"></i>
+            <span>Logout</span>
+        </div>
+    </nav>
+</body>
+</html>
