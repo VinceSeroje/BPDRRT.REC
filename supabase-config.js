@@ -1,7 +1,7 @@
 // Supabase Configuration
 // Replace these with your Supabase project credentials
 const SUPABASE_URL = 'https://jkwlkfifzifknrsvmgxr.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imprd2xrZmlmemlma25yc3ZtZ3hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NTc2MDksImV4cCI6MjA5MDUzMzYwOX0.QlFVEyjwmcUq4yRy0C4Xz_Zi23xdFEqZczspYSdmVi8';
+const SUPABASE_ANON_KEY = 'sb_publishable_FIwmt93LiqOUn-17V3OkmA_hIdkKX4N';
 
 // Initialize Supabase client
 let supabaseClient;
